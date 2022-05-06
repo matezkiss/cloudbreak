@@ -9,12 +9,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 
 import com.sequenceiq.authorization.annotation.InternalOnly;
+import com.sequenceiq.cloudbreak.auth.ThreadBasedUserCrnProvider;
 import com.sequenceiq.cloudbreak.auth.security.internal.AccountId;
 import com.sequenceiq.cloudbreak.structuredevent.rest.annotation.AccountEntityType;
 import com.sequenceiq.consumption.api.v1.consumption.endpoint.ConsumptionInternalEndpoint;
-import com.sequenceiq.consumption.api.v1.consumption.model.request.StorageConsumptionScheduleRequest;
-import com.sequenceiq.consumption.api.v1.consumption.model.request.StorageConsumptionUnscheduleRequest;
+import com.sequenceiq.consumption.api.v1.consumption.model.request.StorageConsumptionRequest;
 import com.sequenceiq.consumption.domain.Consumption;
+import com.sequenceiq.consumption.dto.ConsumptionCreationDto;
+import com.sequenceiq.consumption.endpoint.converter.ConsumptionApiConverter;
+import com.sequenceiq.consumption.flow.ConsumptionReactorFlowManager;
 import com.sequenceiq.consumption.service.ConsumptionService;
 
 @Controller
@@ -26,19 +29,30 @@ public class ConsumptionInternalV1Controller implements ConsumptionInternalEndpo
 
     private final ConsumptionService consumptionService;
 
-    public ConsumptionInternalV1Controller(ConsumptionService consumptionService) {
+    private final ConsumptionApiConverter consumptionApiConverter;
+
+    private final ConsumptionReactorFlowManager flowManager;
+
+    public ConsumptionInternalV1Controller(ConsumptionService consumptionService, ConsumptionApiConverter consumptionApiConverter,
+            ConsumptionReactorFlowManager flowManager) {
         this.consumptionService = consumptionService;
+        this.consumptionApiConverter = consumptionApiConverter;
+        this.flowManager = flowManager;
     }
 
     @Override
     @InternalOnly
-    public void scheduleStorageConsumptionCollection(@AccountId String accountId, @Valid @NotNull StorageConsumptionScheduleRequest request) {
-        consumptionService.scheduleStorageConsumptionCollection(request);
+    public void scheduleStorageConsumptionCollection(@AccountId String accountId, @Valid @NotNull StorageConsumptionRequest request) {
+        ConsumptionCreationDto consumptionCreationDto = consumptionApiConverter.initCreationDtoForStorage(request);
+        Consumption consumption = consumptionService.create(consumptionCreationDto);
+
+        flowManager.triggerStorageConsumptionCollectionFlow(consumption, ThreadBasedUserCrnProvider.getUserCrn());
     }
 
     @Override
     @InternalOnly
-    public void unscheduleStorageConsumptionCollection(@AccountId String accountId, @Valid @NotNull StorageConsumptionUnscheduleRequest request) {
-        consumptionService.unscheduleStorageConsumptionCollection(request);
+    public void unscheduleStorageConsumptionCollection(@AccountId String accountId, @NotNull String monitoredResourceCrn, @NotNull String storageLocation) {
+        Consumption consumption = consumptionService.findStorageConsumptionByMonitoredResourceCrnAndLocation(monitoredResourceCrn, storageLocation);
+        consumptionService.delete(consumption);
     }
 }
