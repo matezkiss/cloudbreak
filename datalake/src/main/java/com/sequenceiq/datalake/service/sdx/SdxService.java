@@ -596,9 +596,6 @@ public class SdxService implements ResourceIdProvider, PayloadContextProvider, H
         if (!entitlementService.isDatalakeLightToMediumMigrationEnabled(ThreadBasedUserCrnProvider.getAccountId())) {
             throw new BadRequestException("Refresh of the data hub is not supported");
         }
-//        if (!Strings.isNullOrEmpty(datahubName)) {
-//
-//        }
         String accountIdFromCrn = getAccountIdFromCrn(ThreadBasedUserCrnProvider.getUserCrn());
         SdxCluster sdxCluster = sdxClusterRepository.findByAccountIdAndClusterNameAndDeletedIsNull(accountIdFromCrn, clusterName)
                 .orElseThrow(() -> notFound("SDX cluster", clusterName).get());
