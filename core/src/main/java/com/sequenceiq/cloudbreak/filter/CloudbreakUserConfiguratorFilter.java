@@ -31,7 +31,8 @@ public class CloudbreakUserConfiguratorFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        CloudbreakUser cloudbreakUser = authenticatedUserService.getCbUser();
+        String userCrn = request.getHeader("x-cdp-actor-crn");
+        CloudbreakUser cloudbreakUser = authenticatedUserService.getCbUser(userCrn);
         if (cloudbreakUser != null) {
             userService.getOrCreate(cloudbreakUser);
         }

@@ -39,8 +39,8 @@ public class AuditFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         filterChain.doFilter(request, response);
-
-        CloudbreakUser cloudbreakUser = authenticatedUserService.getCbUser();
+        String userCrn = request.getHeader("x-cdp-actor-crn");
+        CloudbreakUser cloudbreakUser = authenticatedUserService.getCbUser(userCrn);
         if (auditEnabled && includePathPattern(request.getRequestURI())) {
             Map<String, Object> requestParameters = new HashMap<>();
             requestParameters.put("uri", request.getRequestURI());

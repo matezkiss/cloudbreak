@@ -2,6 +2,7 @@ package com.sequenceiq.periscope.filter;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -56,10 +57,11 @@ public class AuditFilterTest {
 
     @Test
     public void testDoFilterInternalWhenAuditAndMutating() throws Exception {
-        when(authenticatedUserService.getCbUser())
+        when(authenticatedUserService.getCbUser(any()))
                 .thenReturn(new CloudbreakUser("userid", "usercrn", "username", "useremail", "usertenant"));
         when(request.getRequestURI()).thenReturn("/as/api/v1/distrox/crn/testcrn/autoscale_config");
         when(request.getMethod()).thenReturn("POST");
+        when(request.getHeader("x-cdp-actor-crn")).thenReturn("");
         when(request.getHeader("x-real-ip")).thenReturn("127.0.0.1");
         when(request.getHeader("user-agent")).thenReturn("test-user-agent");
 
@@ -71,10 +73,11 @@ public class AuditFilterTest {
 
     @Test
     public void testDoFilterInternalWhenAuditAndNotMutating() throws Exception {
-        when(authenticatedUserService.getCbUser())
+        when(authenticatedUserService.getCbUser(any()))
                 .thenReturn(new CloudbreakUser("userid", "usercrn", "username", "useremail", "usertenant"));
         when(request.getRequestURI()).thenReturn("/as/api/v1/distrox/crn/testcrn/autoscale_config");
         when(request.getMethod()).thenReturn("GET");
+        when(request.getHeader("x-cdp-actor-crn")).thenReturn("");
         when(request.getHeader("x-real-ip")).thenReturn("127.0.0.1");
         when(request.getHeader("user-agent")).thenReturn("test-user-agent");
 
@@ -86,8 +89,9 @@ public class AuditFilterTest {
 
     @Test
     public void testDoFilterInternalWhenNotAnAuditUrl() throws Exception {
-        when(authenticatedUserService.getCbUser())
+        when(authenticatedUserService.getCbUser(any()))
                 .thenReturn(new CloudbreakUser("userid", "usercrn", "username", "useremail", "usertenant"));
+        when(request.getHeader("x-cdp-actor-crn")).thenReturn("");
         when(request.getRequestURI()).thenReturn("/as/api/healthcheck");
 
         underTest.doFilterInternal(request, response, filterChain);
