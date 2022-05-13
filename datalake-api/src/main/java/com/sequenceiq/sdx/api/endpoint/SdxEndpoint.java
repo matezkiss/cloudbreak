@@ -123,9 +123,9 @@ public interface SdxEndpoint {
     SdxClusterResponse resize(@PathParam("name") String name, @Valid SdxClusterResizeRequest resizeSdxClusterRequest);
 
     @POST
-    @Path("{name}/refresh")
+    @Path("{datalakeName}/refresh")
     @Produces(MediaType.APPLICATION_JSON)
-    SdxClusterResponse refresh(@PathParam("name") String name, @QueryParam("datahubName") String datahubName);
+    SdxClusterResponse refreshDataHubs(@PathParam("datalakeName") String name, @QueryParam("datahubName") String datahubName);
 
     @DELETE
     @Path("/crn/{clusterCrn}")

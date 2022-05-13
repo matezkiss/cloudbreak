@@ -166,11 +166,9 @@ public class SdxController implements SdxEndpoint {
 
     @Override
     @CheckPermissionByResourceName(action = AuthorizationResourceAction.RESIZE_DATALAKE)
-    public SdxClusterResponse refresh(@ResourceName String name, String datahubName) {
-        Pair<SdxCluster, FlowIdentifier> result = sdxService.refreshSdx(name, datahubName);
-        SdxClusterResponse sdxClusterResponse = sdxClusterConverter.sdxClusterToResponse(result.getLeft());
-        sdxClusterResponse.setFlowIdentifier(result.getRight());
-        return sdxClusterResponse;
+    public SdxClusterResponse refreshDataHubs(@ResourceName String name, String datahubName) {
+        SdxCluster sdxCluster = sdxService.refreshDataHub(name, datahubName);
+        return sdxClusterConverter.sdxClusterToResponse(sdxCluster);
     }
 
     @Override

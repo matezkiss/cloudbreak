@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Strings;
 import com.sequenceiq.authorization.resource.AuthorizationResourceType;
 import com.sequenceiq.authorization.service.HierarchyAuthResourcePropertyProvider;
 import com.sequenceiq.authorization.service.OwnerAssignmentService;
@@ -592,15 +593,19 @@ public class SdxService implements ResourceIdProvider, PayloadContextProvider, H
         return Pair.of(sdxCluster, flowIdentifier);
     }
 
-    public Pair<SdxCluster, FlowIdentifier> refreshSdx(String clusterName, String datahubName) {
+    public SdxCluster refreshDataHub(String clusterName, String datahubName) {
         if (!entitlementService.isDatalakeLightToMediumMigrationEnabled(ThreadBasedUserCrnProvider.getAccountId())) {
             throw new BadRequestException("Refresh of the data hub is not supported");
         }
         String accountIdFromCrn = getAccountIdFromCrn(ThreadBasedUserCrnProvider.getUserCrn());
         SdxCluster sdxCluster = sdxClusterRepository.findByAccountIdAndClusterNameAndDeletedIsNull(accountIdFromCrn, clusterName)
                 .orElseThrow(() -> notFound("SDX cluster", clusterName).get());
-        FlowIdentifier flowIdentifier = sdxReactorFlowManager.triggerSdxRefresh(sdxCluster);
-        return Pair.of(sdxCluster, flowIdentifier);
+        if (Strings.isNullOrEmpty(datahubName)) {
+            distroxService.restartDistroxByCrns(List.of(datahubName));
+        } else {
+            distroxService.restartAttachedDistroxClusters(sdxCluster.getEnvCrn());
+        }
+        return sdxCluster;
     }
 
     private SdxCluster validateAndCreateNewSdxCluster(String userCrn,
