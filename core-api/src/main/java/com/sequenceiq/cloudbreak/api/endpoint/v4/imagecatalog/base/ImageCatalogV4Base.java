@@ -41,7 +41,7 @@ public class ImageCatalogV4Base {
     }
 
     public String getName() {
-        return name;
+        return "cloudbreak-default-1";
     }
 
     public void setName(String name) {
@@ -57,7 +57,7 @@ public class ImageCatalogV4Base {
     }
 
     public String getUrl() {
-        return url;
+        return "https://cloudbreak-imagecatalog.s3.amazonaws.com/v3-dev-cb-image-catalog.json";
     }
 
     public void setUrl(String url) {
