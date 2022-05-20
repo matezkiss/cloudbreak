@@ -601,9 +601,9 @@ public class SdxService implements ResourceIdProvider, PayloadContextProvider, H
         SdxCluster sdxCluster = sdxClusterRepository.findByAccountIdAndClusterNameAndDeletedIsNull(accountIdFromCrn, clusterName)
                 .orElseThrow(() -> notFound("SDX cluster", clusterName).get());
         if (Strings.isNullOrEmpty(datahubName)) {
-            distroxService.restartDistroxByCrns(List.of(datahubName));
-        } else {
             distroxService.restartAttachedDistroxClusters(sdxCluster.getEnvCrn());
+        } else {
+            distroxService.restartDistroxByCrns(List.of(datahubName));
         }
         return sdxCluster;
     }
